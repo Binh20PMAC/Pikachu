@@ -23,9 +23,9 @@ public class Change : MonoBehaviour
 
         List<Sprite> sprites = new List<Sprite>();
 
-        for (int i = 1; i < 7; i++)
+        for (int i = 1; i < Map.ROW - 1; i++)
         {
-            for (int j = 1; j < 17; j++)
+            for (int j = 1; j < Map.COL - 1; j++)
             {
                 if (Map.map_pikachu[i, j].gameObject.activeInHierarchy)
                 {
@@ -46,9 +46,9 @@ public class Change : MonoBehaviour
             sprites[index2] = temp;
         }
 
-        for (int i = 1; i < 7; i++)
+        for (int i = 1; i < Map.ROW - 1; i++)
         {
-            for (int j = 1; j < 17; j++)
+            for (int j = 1; j < Map.COL - 1; j++)
             {
                 if (Map.map_pikachu[i, j].gameObject.activeInHierarchy)
                     Map.map_pikachu[i, j].GetComponent<SpriteRenderer>().sprite = sprites[--count];

@@ -10,7 +10,7 @@ public class Map : MonoBehaviour
     [SerializeField] public static GameObject[,] map_pikachu;
     [SerializeField] private int Width;
     [SerializeField] private int Height;
-    private int ROW, COL;
+    public static int ROW, COL;
     private int[,] MAP;
     private bool[][] SHIFT;
     private bool[][] SHIFT_ROOT_POS;
