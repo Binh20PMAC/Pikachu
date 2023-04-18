@@ -1,7 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using static UnityEngine.RuleTile.TilingRuleOutput;
 
 public class Map : MonoBehaviour
 {
@@ -46,6 +49,12 @@ public class Map : MonoBehaviour
             int mouse_col = (int)(x - MIN_X) / (CELL_WIDH);
             int mouse_row = (int)(y - MIN_Y) / (CELL_HEIGHT);
 
+            if (mouse_col < 0 || mouse_col > COL - 1 || mouse_row < 0 || mouse_row > ROW - 1)
+            {
+                mouse_row = 0;
+                mouse_col = 0;
+            }
+
             if (POS1 != null && POS1.C == mouse_col && POS1.R == mouse_row && MAP[mouse_row, mouse_col] == 0)
             {
                 DeSelect();
@@ -59,10 +68,7 @@ public class Map : MonoBehaviour
                 CheckPair(new Vec2(mouse_row, mouse_col));
             }
         }
-        if (linePikachu.activeInHierarchy)
-        {
-            StartCoroutine(LineOff());
-        }
+
     }
 
     private void Select(Vec2 pos)
@@ -93,9 +99,10 @@ public class Map : MonoBehaviour
             {
                 Default();
             }
-            else if (!SHIFT[POS1.R][POS1.C] && !SHIFT[POS2.R][POS2.C] && FindPath(POS1, POS2) != null)
+            else if (!SHIFT[POS1.R][POS1.C] && !SHIFT[POS2.R][POS2.C] && FindPathss(POS1, POS2) != null)
             {
-                Line();
+                Line(FindPathss(POS1, POS2).Count);
+
                 if (map_pikachu[POS1.R, POS1.C].GetComponent<SpriteRenderer>().sprite.name == map_pikachu[POS2.R, POS2.C].GetComponent<SpriteRenderer>().sprite.name && MAP[POS2.R, POS2.C] == -1)
                 {
                     (map_pikachu[POS1.R, POS1.C]).SetActive(false);
@@ -122,19 +129,32 @@ public class Map : MonoBehaviour
 
     }
 
-    private void Line()
+    private void Line(int count)
     {
-        linePikachu.GetComponent<LineRenderer>().positionCount = FindPath(POS1, POS2).Count;
-        int count = 0;
+        linePikachu.GetComponent<LineRenderer>().positionCount = count;
+        int counts = 0;
+
+        foreach (Vec2 line in FindPathss(POS1, POS2))
+        {
+            linePikachu.GetComponent<LineRenderer>().SetPosition(counts++, POS[line.R][line.C]);
+        }
+        linePikachu.SetActive(true);
+        if (linePikachu.activeInHierarchy)
+        {
+            StartCoroutine(LineOff());
+        }
+    }
+    private int LimitLine(List<Vec2> Find, int count)
+    {
+        linePikachu.GetComponent<LineRenderer>().positionCount = count;
         int limit = 0;
         float tempX = POS1.R;
         float tempY = POS1.C;
         float temp = -1;
         bool x = true;
         bool y = true;
-        foreach (Vec2 line in FindPath(POS1, POS2))
+        foreach (Vec2 line in Find)
         {
-
             if (tempX == line.R && tempY != line.C) // Change col
             {
                 if (temp == line.R && line.R != line.C && x == true)
@@ -143,8 +163,6 @@ public class Map : MonoBehaviour
                     y = true;
                     x = false;
                 }
-
-
                 temp = line.C;
             }
             else if (tempY == line.C && tempX != line.R) // Change row
@@ -155,26 +173,20 @@ public class Map : MonoBehaviour
                     x = true;
                     y = false;
                 }
-
                 temp = line.R;
             }
+
             if (tempX == line.R && tempY == line.C)
             {
-                Debug.Log("zero");
-
                 limit++;
             }
             else tempX = line.R; tempY = line.C;
-            linePikachu.GetComponent<LineRenderer>().SetPosition(count++, POS[line.R][line.C]);
         }
-        if (limit > 3)
-        {
-            MAP[POS2.R, POS2.C] = 0;
-            linePikachu.SetActive(false);
-        }
-        else linePikachu.SetActive(true);
-        Debug.Log(limit);
+
+        Debug.Log("Kenkai" + limit);
+        return limit;
     }
+
     IEnumerator LineOff()
     {
         yield return new WaitForSeconds(0.5f);
@@ -292,7 +304,6 @@ public class Map : MonoBehaviour
 
             if (current.R == end.R && current.C == end.C)
             {
-
                 return Vec2.GeneratePath(current);
             }
 
@@ -331,40 +342,475 @@ public class Map : MonoBehaviour
         }
         return null;
     }
+
+    private List<Vec2> FindPaths(Vec2 start, Vec2 end) // AStar
+    {
+        List<Vec2> openNeighborList = GetNeighbors(start);
+        List<Vec2> endNeighborList = GetNeighbors(end);
+        List<Vec2> totalList = new List<Vec2>();
+        List<Vec2> openList = new List<Vec2>();
+        List<Vec2> closedList = new List<Vec2>();
+
+        List<Vec2> totalLimit = new List<Vec2>();
+
+        closedList.Add(start);
+        foreach (Vec2 open in openNeighborList)
+        {
+            open.h = Vec2.Heuristic(open, end);
+            open.g++;
+            open.CalculateF();
+
+            if (open.R == end.R && open.C == end.C)
+            {
+                end.parent = start;
+                return Vec2.GeneratePath(end);
+            }
+        }
+
+        foreach (Vec2 open in openNeighborList)
+        {
+            openList.Add(open);
+            while (openList.Count > 0)
+            {
+                Vec2 current = Vec2.GetLowestFNode(openList); // F Low
+                foreach (Vec2 endNeighbor in endNeighborList)
+                {
+                    if (current.R == endNeighbor.R && current.C == endNeighbor.C)
+                    {
+                        open.parent = start;
+                        end.parent = endNeighbor;
+                        endNeighbor.parent = current.parent;
+                        totalList = Vec2.GeneratePath(end);
+                        int limit = LimitLine(totalList, totalList.Count);
+
+                        if (limit > 0 && limit < 4)
+                        {
+                            if (limit == 1)
+                                totalLimit = Vec2.GeneratePath(end);
+                            else if (limit == 2 && totalLimit.Count == 0)
+                                totalLimit = Vec2.GeneratePath(end);
+                            else if (limit == 3 && totalLimit.Count == 0)
+                                totalLimit = Vec2.GeneratePath(end);
+                        }
+                        else
+                        {
+                            //closedList.Clear();
+                            openList.Clear();
+                            openList.Add(open);
+                            //closedList.Add(start);
+                            open.parent = null;
+                            end.parent = null;
+                            endNeighbor.parent = null;
+                        }
+                    }
+                }
+
+                openList.Remove(current);
+                closedList.Add(current);
+
+                List<Vec2> neighbors = GetNeighbors(current); // Neighbor
+
+                foreach (Vec2 neighbor in neighbors)
+                {
+                    if (closedList.Any(n => n.R == neighbor.R && n.C == neighbor.C) || (neighbor.R == start.R && neighbor.C == start.C))
+                    {
+                        continue;
+                    }
+                    float tentativeG = current.g + 1;
+                    bool isTentativeBetter = false;
+
+                    if (!openList.Contains(neighbor))
+                    {
+                        openList.Add(neighbor);
+                        neighbor.h = Vec2.Heuristic(neighbor, end);
+                        isTentativeBetter = true;
+                    }
+                    else if (tentativeG < neighbor.g)
+                    {
+                        isTentativeBetter = true;
+                    }
+
+                    if (isTentativeBetter)
+                    {
+                        neighbor.parent = current;
+                        neighbor.g = tentativeG;
+                        neighbor.CalculateF();
+                    }
+                }
+            }
+        }
+        if (totalLimit.Count == 0)
+            return null;
+        else return totalLimit;
+    }
+
+    private List<Vec2> FindPathss(Vec2 start, Vec2 end) // AStar
+    {
+        List<Vec2> openNeighborList = GetNeighbors(start);
+        List<Vec2> openList = new List<Vec2>();
+        List<Vec2> closedList = new List<Vec2>();
+        int fastDistance = Vec2.FastDistance(start, end);
+
+        foreach (Vec2 open in openNeighborList)
+        {
+            if (open.R == end.R && open.C == end.C)
+            {
+                end.parent = start;
+                return Vec2.GeneratePath(end);
+            }
+        }
+        if (fastDistance == Vec2.c) // Col
+        {
+            return FindCol(openNeighborList, start, end, openList);
+        }
+        else if (fastDistance == Vec2.r) // Row
+        {
+            return FindRow(openNeighborList, start, end, openList);
+        }
+        return null;
+    }
+
+    private List<Vec2> FindCol(List<Vec2> openNeighborList, Vec2 start, Vec2 end, List<Vec2> openList)
+    {
+        int Count = openNeighborList.Count;
+
+        foreach (Vec2 open in openNeighborList)
+        {
+            int C = 1; // Right
+            if (end.C > start.C) // Left
+            {
+                C = -1;
+            }
+            int R = 1; // Up
+            if (end.R > open.R) // Down
+            {
+                R = -1;
+            }
+            int fastDistance = Vec2.FastDistance(open, end);
+
+            int Row = 0;
+            if ((start.C - 1) == open.C) // Right
+            {
+                if (end.R > open.R) // Down
+                {
+                    R = -1;
+                }
+                Row = 0;
+            }
+            else if ((start.C + 1) == open.C) // Left
+            {
+                if (end.R > open.R) // Down
+                {
+                    R = -1;
+                }
+                Row = 0;
+            }
+            else if ((start.R - 1) == open.R) // Up
+            {
+                Row = 1;
+                R = 1;
+            }
+            else if ((start.R + 1) == open.R) // Down
+            {
+                Row = -1;
+                R = -1;
+            }
+
+            open.parent = start;
+
+            for (int i = 1; i <= Vec2.c; i++)
+            {
+                if (open.C >= 0 && open.C < MAP.GetLength(1))
+                {
+                    if (MAP[open.R, open.C - (i * C)] == 0) // Right Left check
+                    {
+                        if (MAP[open.R - ((open.R - Row) - (start.R - 1 * R)), open.C - (open.C - start.C)] == -1) // Check start up or down
+                        {
+                            i = 0;
+                            open.R -= 1 * R;
+                        }
+                        else
+                        {
+                            if (Count == 1)
+                                return null;
+                            else
+                            {
+                                Count--;
+                                openList.Clear();
+                                break;
+                            }
+                        }
+
+                    }
+                    //else if (open.C - (i * C) == start.C && open.R == start.R) // Check end
+                    //{
+                    //    if (MAP[start.R - (1 * R), start.C] == 0)
+                    //    {
+                    //        if (Count == 1)
+                    //            return null;
+                    //        else
+                    //        {
+                    //            Count--;
+                    //            openList.Clear();
+                    //            break;
+                    //        }
+                    //    }
+                    //    else
+                    //    {
+                    //        open.R = start.R - (1 * R);
+                    //    }
+                    //}
+                    else if (open.C - (i * C) == end.C)
+                    {
+                        openList.Add(open.parent);
+                        if (((open.C - (i * C)) == end.C) && (open.R == end.R))
+                        {
+                            open.C -= Vec2.c * C;
+                            open.parent = new Vec2(open.R, open.C + (Vec2.c * C));
+                            openList.Add(open.parent);
+                            end.parent = open;
+                            openList.Add(end.parent);
+                            return openList;
+                        }
+                        open.C -= Vec2.c * C;
+                        open.parent = new Vec2(open.R, open.C + (Vec2.c * C));
+                        openList.Add(open.parent);
+                    }
+                }
+            }
+            fastDistance = Vec2.FastDistance(open, end);
+            if (end.R > open.R)
+            {
+                R = -1; // Down
+            }
+            else R = 1; // Up
+            for (int i = 1; i <= fastDistance; i++)
+            {
+                if (openList.Count == 0)
+                {
+                    break;
+                }
+
+                if (open.R >= 0 && open.R < MAP.GetLength(0))
+                {
+                    if (MAP[open.R - (i * R), open.C] == 0) // Down Up
+                    {
+                        if (Count == 1)
+                            return null;
+                        else
+                        {
+                            Count--;
+                            openList.Clear();
+                            break;
+
+                        }
+                    }
+                    else if (open.R - (i * R) == end.R)
+                    {
+                        open.R -= Vec2.r * R;
+                        open.parent = new Vec2(open.R + (Vec2.r * R), open.C);
+                        openList.Add(open.parent);
+                        end.parent = open;
+                        openList.Add(end.parent);
+                        return openList;
+                    }
+                }
+
+            }
+
+        }
+        return null;
+    }
+    private List<Vec2> FindRow(List<Vec2> openNeighborList, Vec2 start, Vec2 end, List<Vec2> openList)
+    {
+        int Count = openNeighborList.Count;
+        bool reverse = false;
+
+        foreach (Vec2 open in openNeighborList)
+        {
+
+            if (start.R - 1 == open.R && start.C == open.C && reverse == false)
+            {
+                reverse = true;
+            }
+            else if (start.R + 1 == open.R && start.C == open.C && reverse == false)
+            {
+                reverse = true;
+            }
+        }
+
+        if (reverse)
+        {
+            openNeighborList.Reverse();
+        }
+
+        foreach (Vec2 open in openNeighborList)
+        {
+            int C = 1; // Right
+            if (end.C > open.C) // Left
+            {
+                C = -1;
+            }
+            int R = 1; // Up
+            if (end.R > start.R) // Down
+            {
+                R = -1;
+            }
+            int fastDistance = Vec2.FastDistance(open, end);
+            int Col = 0;
+            if ((start.C - 1) == open.C) // Right
+            {
+                Col = -1;
+                C = -1;
+            }
+            else if ((start.C + 1) == open.C) // Left
+            {
+                Col = 1;
+                C = 1;
+            }
+            else if ((start.R - 1) == open.R) // Up
+            {
+                Col = 0;
+                if (end.C > open.C) // Left
+                {
+                    C = -1;
+                }
+            }
+            else if ((start.R + 1) == open.R) // Down
+            {
+                Col = 0;
+                if (end.C > open.C) // Left
+                {
+                    C = -1;
+                }
+            }
+
+            open.parent = start;
+
+            for (int i = 1; i <= Vec2.r; i++)
+            {
+                if (open.R >= 0 && open.R < MAP.GetLength(0))
+                {
+                    if (MAP[open.R - (i * R), open.C] == 0) // Up Down
+                    {
+                        if (MAP[open.R - (open.R - start.R), open.C - ((open.C - Col) - (start.C - 1 * C))] == -1)
+                        {
+                            i = 0;
+                            open.C -= 1 * C;
+                        }
+                        else
+                        {
+                            if (Count == 1)
+                                return null;
+                            else
+                            {
+                                Count--;
+                                openList.Clear();
+                                break;
+                            }
+                        }
+
+                    }
+                    else if (open.R - (i * R) == end.R)
+                    {
+                        openList.Add(open.parent);
+                        if (((open.R - (i * R)) == end.R) && (open.C == end.C))
+                        {
+                            open.R -= Vec2.r * R;
+                            open.parent = new Vec2(open.R + (Vec2.r * R), open.C);
+                            openList.Add(open.parent);
+                            end.parent = open;
+                            openList.Add(end.parent);
+                            return openList;
+                        }
+                        open.R -= Vec2.r * R;
+                        open.parent = new Vec2(open.R + (Vec2.r * R), open.C);
+                        openList.Add(open.parent);
+                    }
+                }
+            }
+            fastDistance = Vec2.FastDistance(open, end);
+            if (end.C > open.C)
+            {
+                C = -1; // Right
+            }
+            else C = 1; // Left
+            for (int i = 1; i <= Vec2.c; i++)
+            {
+                if (openList.Count == 0)
+                {
+                    break;
+                }
+
+                if (open.C >= 0 && open.C < MAP.GetLength(1))
+                {
+                    if (MAP[open.R, open.C - (i * C)] == 0) // Left Right
+                    {
+                        if (openNeighborList.Count == 1)
+                            return null;
+                        else
+                        {
+                            if (Count == 1)
+                                return null;
+                            else
+                            {
+                                Count--;
+                                openList.Clear();
+                                break;
+
+                            }
+                        }
+                    }
+                    else if (open.C - (i * C) == end.C)
+                    {
+                        open.C -= Vec2.c * C;
+                        open.parent = new Vec2(open.R, open.C + (Vec2.c * C));
+                        openList.Add(open.parent);
+                        end.parent = open;
+                        openList.Add(end.parent);
+                        return openList;
+                    }
+                }
+            }
+        }
+        return null;
+    }
     private List<Vec2> GetNeighbors(Vec2 node)
     {
         List<Vec2> neighbor = new List<Vec2>();
-        if (node.C > 0 && MAP[node.R, node.C - 1] == -1) // Right
-        {
-            neighbor.Add(new Vec2(node.R, node.C - 1));
-            if (SHIFT_ROOT_POS[node.R][node.C - 1] == true)
-            {
-                return neighbor;
-            }
-        }
-        if (node.C < MAP.GetLength(1) - 1 && MAP[node.R, node.C + 1] == -1) // Left
-        {
-            neighbor.Add(new Vec2(node.R, node.C + 1));
-            if (SHIFT_ROOT_POS[node.R][node.C + 1] == true)
-            {
-                return neighbor;
-            }
-        }
+
+
         if (node.R > 0 && MAP[node.R - 1, node.C] == -1) // Up
         {
             neighbor.Add(new Vec2(node.R - 1, node.C));
-            if (SHIFT_ROOT_POS[node.R - 1][node.C] == true)
-            {
-                return neighbor;
-            }
+            //if (SHIFT_ROOT_POS[node.R - 1][node.C] == true)
+            //{
+            //    return neighbor;
+            //}
         }
         if (node.R < MAP.GetLength(0) - 1 && MAP[node.R + 1, node.C] == -1) // Down
         {
             neighbor.Add(new Vec2(node.R + 1, node.C));
-            if (SHIFT_ROOT_POS[node.R + 1][node.C] == true)
-            {
-                return neighbor;
-            }
+            //if (SHIFT_ROOT_POS[node.R + 1][node.C] == true)
+            //{
+            //    return neighbor;
+            //}
+        }
+        if (node.C > 0 && MAP[node.R, node.C - 1] == -1) // Right
+        {
+            neighbor.Add(new Vec2(node.R, node.C - 1));
+            //if (SHIFT_ROOT_POS[node.R][node.C - 1] == true)
+            //{
+            //    return neighbor;
+            //}
+        }
+        if (node.C < MAP.GetLength(1) - 1 && MAP[node.R, node.C + 1] == -1) // Left
+        {
+            neighbor.Add(new Vec2(node.R, node.C + 1));
+            //if (SHIFT_ROOT_POS[node.R][node.C + 1] == true)
+            //{
+            //    return neighbor;
+            //}
         }
         return neighbor;
     }

@@ -348,7 +348,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Cooldown: {fileID: 74998325}
-  Times: 300
+  Times: 3000
 --- !u!1 &253448251
 GameObject:
   m_ObjectHideFlags: 0
@@ -679,7 +679,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
   m_AnchoredPosition: {x: -80, y: 105}
-  m_SizeDelta: {x: 100, y: 90}
+  m_SizeDelta: {x: 90, y: 90}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &351625900
 MonoBehaviour:

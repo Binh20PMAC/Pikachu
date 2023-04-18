@@ -15,6 +15,8 @@ public class CooldownTime : MonoBehaviour
         if (Cooldown.fillAmount == 0 )
         {
             Map.score = 0;
+            Map.COL = 0;
+            Map.ROW = 0;
             SceneManager.LoadScene("SampleScene");
         }
     }
