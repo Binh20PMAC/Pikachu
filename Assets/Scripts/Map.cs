@@ -447,10 +447,7 @@ public class Map : MonoBehaviour
     private List<Vec2> FindPathss(Vec2 start, Vec2 end) // AStar
     {
         List<Vec2> openNeighborList = GetNeighbors(start);
-        List<Vec2> openList = new List<Vec2>();
-        List<Vec2> closedList = new List<Vec2>();
         int fastDistance = Vec2.FastDistance(start, end);
-
         foreach (Vec2 open in openNeighborList)
         {
             if (open.R == end.R && open.C == end.C)
@@ -459,79 +456,93 @@ public class Map : MonoBehaviour
                 return Vec2.GeneratePath(end);
             }
         }
+
         if (fastDistance == Vec2.c) // Col
         {
-            return FindCol(openNeighborList, start, end, openList);
+            return FindCol(openNeighborList, start, end);
         }
         else if (fastDistance == Vec2.r) // Row
         {
-            return FindRow(openNeighborList, start, end, openList);
+            return FindRow(openNeighborList, start, end);
         }
         return null;
     }
 
-    private List<Vec2> FindCol(List<Vec2> openNeighborList, Vec2 start, Vec2 end, List<Vec2> openList)
+    private List<Vec2> FindCol(List<Vec2> openNeighborList, Vec2 start, Vec2 end)
     {
+        List<Vec2> openList = new List<Vec2>();
+        List<Vec2> openChange = new List<Vec2>();
         int Count = openNeighborList.Count;
+
+        for (int i = 0; i < openNeighborList.Count; i++)
+        {
+            if (end.C > start.C && start.C - 1 == openNeighborList[i].C)
+            {
+                if (openNeighborList[i].R != end.R)
+                    openChange.Add(openNeighborList[i]);
+                openNeighborList.Remove(openNeighborList[i]);
+            }
+            else if (end.C < start.C && start.C + 1 == openNeighborList[i].C)
+            {
+                if (openNeighborList[i].R != end.R)
+                    openChange.Add(openNeighborList[i]);
+                openNeighborList.Remove(openNeighborList[i]);
+            }
+        }
 
         foreach (Vec2 open in openNeighborList)
         {
+            int R = 0; // Up Down
             int C = 1; // Right
             if (end.C > start.C) // Left
             {
                 C = -1;
             }
-            int R = 1; // Up
-            if (end.R > open.R) // Down
-            {
-                R = -1;
-            }
-            int fastDistance = Vec2.FastDistance(open, end);
 
-            int Row = 0;
             if ((start.C - 1) == open.C) // Right
             {
+                C = 1;
                 if (end.R > open.R) // Down
                 {
                     R = -1;
                 }
-                Row = 0;
+                else R = 1;
             }
             else if ((start.C + 1) == open.C) // Left
             {
+                C = -1;
                 if (end.R > open.R) // Down
                 {
                     R = -1;
                 }
-                Row = 0;
+                else R = 1;
             }
             else if ((start.R - 1) == open.R) // Up
             {
-                Row = 1;
                 R = 1;
             }
             else if ((start.R + 1) == open.R) // Down
             {
-                Row = -1;
                 R = -1;
             }
 
+            int fastDistance = Vec2.FastDistance(open, end); // Distance
             open.parent = start;
 
             for (int i = 1; i <= Vec2.c; i++)
             {
-                if (open.C >= 0 && open.C < MAP.GetLength(1))
+                if (open.C - (i * C) >= 0 && open.C - (i * C) < MAP.GetLength(1) && open.R >= 0 && open.R < MAP.GetLength(0))
                 {
                     if (MAP[open.R, open.C - (i * C)] == 0) // Right Left check
                     {
-                        if (MAP[open.R - ((open.R - Row) - (start.R - 1 * R)), open.C - (open.C - start.C)] == -1) // Check start up or down
+                        if (MAP[open.R - 1 * R, open.C] == -1) // Check open up or down
                         {
                             i = 0;
                             open.R -= 1 * R;
                         }
                         else
                         {
-                            if (Count == 1)
+                            if (Count == 1 && openChange.Count == 0)
                                 return null;
                             else
                             {
@@ -540,26 +551,7 @@ public class Map : MonoBehaviour
                                 break;
                             }
                         }
-
                     }
-                    //else if (open.C - (i * C) == start.C && open.R == start.R) // Check end
-                    //{
-                    //    if (MAP[start.R - (1 * R), start.C] == 0)
-                    //    {
-                    //        if (Count == 1)
-                    //            return null;
-                    //        else
-                    //        {
-                    //            Count--;
-                    //            openList.Clear();
-                    //            break;
-                    //        }
-                    //    }
-                    //    else
-                    //    {
-                    //        open.R = start.R - (1 * R);
-                    //    }
-                    //}
                     else if (open.C - (i * C) == end.C)
                     {
                         openList.Add(open.parent);
@@ -576,6 +568,14 @@ public class Map : MonoBehaviour
                         open.parent = new Vec2(open.R, open.C + (Vec2.c * C));
                         openList.Add(open.parent);
                     }
+                }
+                else if (Count == 1 && openChange.Count == 0)
+                    return null;
+                else
+                {
+                    Count--;
+                    openList.Clear();
+                    break;
                 }
             }
             fastDistance = Vec2.FastDistance(open, end);
@@ -595,14 +595,13 @@ public class Map : MonoBehaviour
                 {
                     if (MAP[open.R - (i * R), open.C] == 0) // Down Up
                     {
-                        if (Count == 1)
+                        if (Count == 1 && openChange.Count == 0)
                             return null;
                         else
                         {
                             Count--;
                             openList.Clear();
                             break;
-
                         }
                     }
                     else if (open.R - (i * R) == end.R)
@@ -615,16 +614,36 @@ public class Map : MonoBehaviour
                         return openList;
                     }
                 }
-
             }
-
+        }
+        if (openChange.Count == 1)
+        {
+            return FindRow(openChange, start, end);
         }
         return null;
     }
-    private List<Vec2> FindRow(List<Vec2> openNeighborList, Vec2 start, Vec2 end, List<Vec2> openList)
+    private List<Vec2> FindRow(List<Vec2> openNeighborList, Vec2 start, Vec2 end)
     {
+        List<Vec2> openList = new List<Vec2>();
+        List<Vec2> openChange = new List<Vec2>();
         int Count = openNeighborList.Count;
         bool reverse = false;
+
+        for (int i = 0; i < openNeighborList.Count; i++)
+        {
+            if (end.R > start.R && start.R - 1 == openNeighborList[i].R)
+            {
+                openNeighborList.Remove(openNeighborList[i]);
+                if (openNeighborList[i].C != end.C)
+                    openChange.Add(openNeighborList[i]);
+            }
+            else if (end.R < start.R && start.R + 1 == openNeighborList[i].R)
+            {
+                openNeighborList.Remove(openNeighborList[i]);
+                if (openNeighborList[i].C != end.C)
+                    openChange.Add(openNeighborList[i]);
+            }
+        }
 
         foreach (Vec2 open in openNeighborList)
         {
@@ -646,61 +665,56 @@ public class Map : MonoBehaviour
 
         foreach (Vec2 open in openNeighborList)
         {
-            int C = 1; // Right
-            if (end.C > open.C) // Left
-            {
-                C = -1;
-            }
+            int C = 0; // Right
             int R = 1; // Up
             if (end.R > start.R) // Down
             {
                 R = -1;
             }
-            int fastDistance = Vec2.FastDistance(open, end);
-            int Col = 0;
+
             if ((start.C - 1) == open.C) // Right
             {
-                Col = -1;
-                C = -1;
+                C = 1;
             }
             else if ((start.C + 1) == open.C) // Left
             {
-                Col = 1;
-                C = 1;
+                C = -1;
             }
             else if ((start.R - 1) == open.R) // Up
             {
-                Col = 0;
+                R = 1;
                 if (end.C > open.C) // Left
                 {
                     C = -1;
                 }
+                else C = 1; // Right
             }
             else if ((start.R + 1) == open.R) // Down
             {
-                Col = 0;
+                R = -1;
                 if (end.C > open.C) // Left
                 {
                     C = -1;
                 }
+                else C = 1; // Right
             }
-
+            int fastDistance = Vec2.FastDistance(open, end);
             open.parent = start;
 
             for (int i = 1; i <= Vec2.r; i++)
             {
-                if (open.R >= 0 && open.R < MAP.GetLength(0))
+                if (open.R - (i * R) >= 0 && open.R - (i * R) < MAP.GetLength(0) && open.C >= 0 && open.C < MAP.GetLength(1))
                 {
-                    if (MAP[open.R - (i * R), open.C] == 0) // Up Down
+                    if (MAP[open.R - (i * R), open.C] == 0) // Up Down  
                     {
-                        if (MAP[open.R - (open.R - start.R), open.C - ((open.C - Col) - (start.C - 1 * C))] == -1)
+                        if (MAP[open.R, open.C - 1 * C] == -1)
                         {
                             i = 0;
                             open.C -= 1 * C;
                         }
                         else
                         {
-                            if (Count == 1)
+                            if (Count == 1 && openChange.Count == 0)
                                 return null;
                             else
                             {
@@ -709,7 +723,6 @@ public class Map : MonoBehaviour
                                 break;
                             }
                         }
-
                     }
                     else if (open.R - (i * R) == end.R)
                     {
@@ -727,6 +740,14 @@ public class Map : MonoBehaviour
                         open.parent = new Vec2(open.R + (Vec2.r * R), open.C);
                         openList.Add(open.parent);
                     }
+                }
+                else if (Count == 1 && openChange.Count == 0)
+                    return null;
+                else
+                {
+                    Count--;
+                    openList.Clear();
+                    break;
                 }
             }
             fastDistance = Vec2.FastDistance(open, end);
@@ -750,7 +771,7 @@ public class Map : MonoBehaviour
                             return null;
                         else
                         {
-                            if (Count == 1)
+                            if (Count == 1 && openChange.Count == 0)
                                 return null;
                             else
                             {
@@ -772,6 +793,10 @@ public class Map : MonoBehaviour
                     }
                 }
             }
+        }
+        if (openChange.Count == 1)
+        {
+            return FindCol(openChange, start, end);
         }
         return null;
     }
