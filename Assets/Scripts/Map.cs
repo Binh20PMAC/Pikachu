@@ -526,10 +526,11 @@ public class Map : MonoBehaviour
                 R = -1;
             }
 
+            int temp = 0;
             int fastDistance = Vec2.FastDistance(open, end); // Distance
             open.parent = start;
 
-            for (int i = 1; i <= Vec2.c; i++)
+            for (int i = 0; i <= Vec2.c; i++)
             {
                 if (open.C - (i * C) >= 0 && open.C - (i * C) < MAP.GetLength(1) && open.R >= 0 && open.R < MAP.GetLength(0))
                 {
@@ -539,6 +540,7 @@ public class Map : MonoBehaviour
                         {
                             i = 0;
                             open.R -= 1 * R;
+                            temp++;
                         }
                         else
                         {
@@ -558,15 +560,56 @@ public class Map : MonoBehaviour
                         if (((open.C - (i * C)) == end.C) && (open.R == end.R))
                         {
                             open.C -= Vec2.c * C;
-                            open.parent = new Vec2(open.R, open.C + (Vec2.c * C));
-                            openList.Add(open.parent);
-                            end.parent = open;
-                            openList.Add(end.parent);
-                            return openList;
+                            int check = Vec2.c;
+                            if (temp > 0)
+                                Vec2.FastDistance(start, end);
+                            if (Vec2.c == check)
+                            {
+                                open.parent = new Vec2(open.R, open.C + (check * C));
+                                openList.Add(open.parent);
+                                end.parent = open;
+                                openList.Add(end.parent);
+                                return openList;
+                            }
+                            else
+                            {
+                                openChange.Add(new Vec2(start.R, start.C - 1 * C));
+                                if (Count == 1 && openChange.Count == 0)
+                                    return null;
+                                else
+                                {
+                                    Count--;
+                                    openList.Clear();
+                                    break;
+                                }
+                            }
                         }
-                        open.C -= Vec2.c * C;
-                        open.parent = new Vec2(open.R, open.C + (Vec2.c * C));
-                        openList.Add(open.parent);
+                        else
+                        {
+                            int check = Vec2.c;
+
+                            open.C -= Vec2.c * C;
+
+                            if (temp > 0)
+                                Vec2.FastDistance(start, end);
+                            if (Vec2.c == check)
+                            {
+                                open.parent = new Vec2(open.R, open.C + (check * C));
+                                openList.Add(open.parent);
+                            }
+                            else
+                            {
+                                openChange.Add(new Vec2(start.R, start.C - 1 * C));
+                                if (Count == 1 && openChange.Count == 0)
+                                    return null;
+                                else
+                                {
+                                    Count--;
+                                    openList.Clear();
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
                 else if (Count == 1 && openChange.Count == 0)
@@ -616,7 +659,7 @@ public class Map : MonoBehaviour
                 }
             }
         }
-        if (openChange.Count == 1)
+        if (openChange.Count > 0)
         {
             return FindRow(openChange, start, end);
         }
@@ -633,15 +676,15 @@ public class Map : MonoBehaviour
         {
             if (end.R > start.R && start.R - 1 == openNeighborList[i].R)
             {
-                openNeighborList.Remove(openNeighborList[i]);
                 if (openNeighborList[i].C != end.C)
                     openChange.Add(openNeighborList[i]);
+                openNeighborList.Remove(openNeighborList[i]);
             }
             else if (end.R < start.R && start.R + 1 == openNeighborList[i].R)
             {
-                openNeighborList.Remove(openNeighborList[i]);
                 if (openNeighborList[i].C != end.C)
                     openChange.Add(openNeighborList[i]);
+                openNeighborList.Remove(openNeighborList[i]);
             }
         }
 
@@ -698,10 +741,11 @@ public class Map : MonoBehaviour
                 }
                 else C = 1; // Right
             }
+            int temp = 0;
             int fastDistance = Vec2.FastDistance(open, end);
             open.parent = start;
 
-            for (int i = 1; i <= Vec2.r; i++)
+            for (int i = 0; i <= Vec2.r; i++)
             {
                 if (open.R - (i * R) >= 0 && open.R - (i * R) < MAP.GetLength(0) && open.C >= 0 && open.C < MAP.GetLength(1))
                 {
@@ -711,6 +755,7 @@ public class Map : MonoBehaviour
                         {
                             i = 0;
                             open.C -= 1 * C;
+                            temp++;
                         }
                         else
                         {
@@ -730,15 +775,54 @@ public class Map : MonoBehaviour
                         if (((open.R - (i * R)) == end.R) && (open.C == end.C))
                         {
                             open.R -= Vec2.r * R;
-                            open.parent = new Vec2(open.R + (Vec2.r * R), open.C);
-                            openList.Add(open.parent);
-                            end.parent = open;
-                            openList.Add(end.parent);
-                            return openList;
+                            int check = Vec2.r;
+                            if (temp > 0)
+                                Vec2.FastDistance(start, end);
+                            if (Vec2.r == check)
+                            {
+                                open.parent = new Vec2(open.R + (check * R), open.C);
+                                openList.Add(open.parent);
+                                end.parent = open;
+                                openList.Add(end.parent);
+                                return openList;
+                            }
+                            else
+                            {
+                                openChange.Add(new Vec2(start.R - 1 * R, start.C));
+                                if (Count == 1 && openChange.Count == 0)
+                                    return null;
+                                else
+                                {
+                                    Count--;
+                                    openList.Clear();
+                                    break;
+                                }
+                            }
                         }
-                        open.R -= Vec2.r * R;
-                        open.parent = new Vec2(open.R + (Vec2.r * R), open.C);
-                        openList.Add(open.parent);
+                        else
+                        {
+                            open.R -= Vec2.r * R;
+                            int check = Vec2.r;
+                            if (temp > 0)
+                                Vec2.FastDistance(start, end);
+                            if (Vec2.r == check)
+                            {
+                                open.parent = new Vec2(open.R + (check * R), open.C);
+                                openList.Add(open.parent);
+                            }
+                            else
+                            {
+                                openChange.Add(new Vec2(start.R - 1 * R, start.C));
+                                if (Count == 1 && openChange.Count == 0)
+                                    return null;
+                                else
+                                {
+                                    Count--;
+                                    openList.Clear();
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
                 else if (Count == 1 && openChange.Count == 0)
@@ -751,11 +835,12 @@ public class Map : MonoBehaviour
                 }
             }
             fastDistance = Vec2.FastDistance(open, end);
+
             if (end.C > open.C)
             {
-                C = -1; // Right
+                C = -1; // Left
             }
-            else C = 1; // Left
+            else C = 1; // Right
             for (int i = 1; i <= Vec2.c; i++)
             {
                 if (openList.Count == 0)
@@ -794,7 +879,7 @@ public class Map : MonoBehaviour
                 }
             }
         }
-        if (openChange.Count == 1)
+        if (openChange.Count > 0)
         {
             return FindCol(openChange, start, end);
         }
