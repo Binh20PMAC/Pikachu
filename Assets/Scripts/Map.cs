@@ -27,10 +27,13 @@ public class Map : MonoBehaviour
     private Color opacity = new Color(255f, 255f, 255f, .5f);
     private Color defaultColor = new Color(255f, 255f, 255f, 1.0f);
     public static int score = 0;
+    public static int level = 1;
+    private int map = 0;
     private void Start()
     {
         Pikachu(Width + 2, Height + 2);
         RandomMap();
+        map = ((ROW - 2) * (COL - 2)) / 2;
         AudioManager.instance.PlaySFX("change");
     }
     private void Update()
@@ -105,6 +108,7 @@ public class Map : MonoBehaviour
 
                 if (map_pikachu[POS1.R, POS1.C].GetComponent<SpriteRenderer>().sprite.name == map_pikachu[POS2.R, POS2.C].GetComponent<SpriteRenderer>().sprite.name && MAP[POS2.R, POS2.C] == -1)
                 {
+                    map--;
                     (map_pikachu[POS1.R, POS1.C]).SetActive(false);
                     (map_pikachu[POS2.R, POS2.C]).SetActive(false);
                     MAP[POS1.R, POS1.C] = -1;
@@ -114,6 +118,10 @@ public class Map : MonoBehaviour
                     POS2 = null;
                     score += 10;
                     AudioManager.instance.PlaySFX("point");
+                    if (map == 0)
+                    {
+                        StartCoroutine(NextLevel());
+                    }
                 }
                 else Default();
             }
@@ -191,6 +199,18 @@ public class Map : MonoBehaviour
     {
         yield return new WaitForSeconds(0.5f);
         linePikachu.SetActive(false);
+    }
+    IEnumerator NextLevel()
+    {
+        yield return new WaitForSeconds(1f);
+        level++;
+        COL = 0;
+        ROW = 0;
+        Pikachu(Width + 2, Height + 2);
+        RandomMap();
+        map = ((ROW - 2) * (COL - 2)) / 2;
+        CooldownTime.levelup = 1;
+        AudioManager.instance.PlaySFX("change");
     }
     private void Default()
     {
