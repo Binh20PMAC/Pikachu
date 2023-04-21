@@ -385,6 +385,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Time: {fileID: 2114462815}
   ScoreAndChange: {fileID: 1305789080}
+  rectTransform: {fileID: 951750123}
 --- !u!1 &301667828
 GameObject:
   m_ObjectHideFlags: 0
@@ -1446,6 +1447,51 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!1 &951750122
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 951750123}
+  - component: {fileID: 951750125}
+  m_Layer: 5
+  m_Name: Stretch
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &951750123
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 951750122}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2138590745}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!222 &951750125
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 951750122}
+  m_CullTransparentMesh: 1
 --- !u!1 &985402036
 GameObject:
   m_ObjectHideFlags: 0
@@ -1740,9 +1786,9 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1168008096}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0.0000076293945}
+  m_LocalScale: {x: 0.99999994, y: 0.99999994, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1762,8 +1808,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   linePikachu: {fileID: 1396980601}
   prefap_pikachu: {fileID: 2858847658071050218, guid: 01bce8baefc75964c9065396eba40b6c, type: 3}
-  Width: 2
-  Height: 2
+  Width: 6
+  Height: 16
 --- !u!1 &1305789079
 GameObject:
   m_ObjectHideFlags: 0
@@ -2518,6 +2564,7 @@ RectTransform:
   - {fileID: 1305789080}
   - {fileID: 806008946}
   - {fileID: 280781656}
+  - {fileID: 951750123}
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
