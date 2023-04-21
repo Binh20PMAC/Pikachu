@@ -252,7 +252,7 @@ public class Map : MonoBehaviour
         int[] pool = new int[dem];
 
         for (int i = 0; i < dem / 2; i++)
-            pool[i] = Random.Range(0, 22);
+            pool[i] = Random.Range(0, 35);
         for (int i = dem / 2; i < dem; i++)
             pool[i] = pool[dem - 1 - i];
 
