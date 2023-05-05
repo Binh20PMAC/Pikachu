@@ -206,7 +206,7 @@ public class Map : MonoBehaviour
         Pikachu(Width + 2, Height + 2);
         RandomMap();
         map = ((ROW - 2) * (COL - 2)) / 2;
-        CooldownTime.levelup = 1;
+        CooldownTime.levelUp = 1;
         AudioManager.instance.PlaySFX("change");
     }
     private void Default()
