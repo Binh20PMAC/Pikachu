@@ -99,9 +99,9 @@ public class Map : MonoBehaviour
             {
                 Default();
             }
-            else if (!SHIFT[POS1.R][POS1.C] && !SHIFT[POS2.R][POS2.C] && FindPathss(POS1, POS2) != null)
+            else if (!SHIFT[POS1.R][POS1.C] && !SHIFT[POS2.R][POS2.C] && FindPath(POS1, POS2) != null)
             {
-                Line(FindPathss(POS1, POS2).Count);
+                Line(FindPath(POS1, POS2).Count);
 
                 if (map_pikachu[POS1.R, POS1.C].GetComponent<SpriteRenderer>().sprite.name == map_pikachu[POS2.R, POS2.C].GetComponent<SpriteRenderer>().sprite.name && MAP[POS2.R, POS2.C] == -1)
                 {
@@ -139,7 +139,7 @@ public class Map : MonoBehaviour
         linePikachu.GetComponent<LineRenderer>().positionCount = count;
         int counts = 0;
 
-        foreach (Vec2 line in FindPathss(POS1, POS2))
+        foreach (Vec2 line in FindPath(POS1, POS2))
         {
             linePikachu.GetComponent<LineRenderer>().SetPosition(counts++, POS[line.R][line.C]);
         }
@@ -308,160 +308,8 @@ public class Map : MonoBehaviour
             }
         }
     }
+
     private List<Vec2> FindPath(Vec2 start, Vec2 end) // AStar
-    {
-        List<Vec2> openList = new List<Vec2>();
-        List<Vec2> closedList = new List<Vec2>();
-
-        openList.Add(start);
-
-        while (openList.Count > 0)
-        {
-            Vec2 current = Vec2.GetLowestFNode(openList); // F Low
-
-            if (current.R == end.R && current.C == end.C)
-            {
-                return Vec2.GeneratePath(current);
-            }
-
-            openList.Remove(current);
-            closedList.Add(current);
-
-            List<Vec2> neighbors = GetNeighbors(current); // Neighbor
-
-            foreach (Vec2 neighbor in neighbors)
-            {
-                if (closedList.Any(n => n.R == neighbor.R && n.C == neighbor.C))
-                {
-                    continue;
-                }
-                float tentativeG = current.g + 1;
-                bool isTentativeBetter = false;
-
-                if (!openList.Contains(neighbor))
-                {
-                    openList.Add(neighbor);
-                    neighbor.h = Vec2.Heuristic(neighbor, end);
-                    isTentativeBetter = true;
-                }
-                else if (tentativeG < neighbor.g)
-                {
-                    isTentativeBetter = true;
-                }
-
-                if (isTentativeBetter)
-                {
-                    neighbor.parent = current;
-                    neighbor.g = tentativeG;
-                    neighbor.CalculateF();
-                }
-            }
-        }
-        return null;
-    }
-
-    private List<Vec2> FindPaths(Vec2 start, Vec2 end) // AStar
-    {
-        List<Vec2> openNeighborList = GetNeighbors(start);
-        List<Vec2> endNeighborList = GetNeighbors(end);
-        List<Vec2> totalList = new List<Vec2>();
-        List<Vec2> openList = new List<Vec2>();
-        List<Vec2> closedList = new List<Vec2>();
-
-        List<Vec2> totalLimit = new List<Vec2>();
-
-        closedList.Add(start);
-        foreach (Vec2 open in openNeighborList)
-        {
-            open.h = Vec2.Heuristic(open, end);
-            open.g++;
-            open.CalculateF();
-
-            if (open.R == end.R && open.C == end.C)
-            {
-                end.parent = start;
-                return Vec2.GeneratePath(end);
-            }
-        }
-
-        foreach (Vec2 open in openNeighborList)
-        {
-            openList.Add(open);
-            while (openList.Count > 0)
-            {
-                Vec2 current = Vec2.GetLowestFNode(openList); // F Low
-                foreach (Vec2 endNeighbor in endNeighborList)
-                {
-                    if (current.R == endNeighbor.R && current.C == endNeighbor.C)
-                    {
-                        open.parent = start;
-                        end.parent = endNeighbor;
-                        endNeighbor.parent = current.parent;
-                        totalList = Vec2.GeneratePath(end);
-                        int limit = LimitLine(totalList, totalList.Count);
-
-                        if (limit > 0 && limit < 4)
-                        {
-                            if (limit == 1)
-                                totalLimit = Vec2.GeneratePath(end);
-                            else if (limit == 2 && totalLimit.Count == 0)
-                                totalLimit = Vec2.GeneratePath(end);
-                            else if (limit == 3 && totalLimit.Count == 0)
-                                totalLimit = Vec2.GeneratePath(end);
-                        }
-                        else
-                        {
-                            //closedList.Clear();
-                            openList.Clear();
-                            openList.Add(open);
-                            //closedList.Add(start);
-                            open.parent = null;
-                            end.parent = null;
-                            endNeighbor.parent = null;
-                        }
-                    }
-                }
-
-                openList.Remove(current);
-                closedList.Add(current);
-
-                List<Vec2> neighbors = GetNeighbors(current); // Neighbor
-
-                foreach (Vec2 neighbor in neighbors)
-                {
-                    if (closedList.Any(n => n.R == neighbor.R && n.C == neighbor.C) || (neighbor.R == start.R && neighbor.C == start.C))
-                    {
-                        continue;
-                    }
-                    float tentativeG = current.g + 1;
-                    bool isTentativeBetter = false;
-
-                    if (!openList.Contains(neighbor))
-                    {
-                        openList.Add(neighbor);
-                        neighbor.h = Vec2.Heuristic(neighbor, end);
-                        isTentativeBetter = true;
-                    }
-                    else if (tentativeG < neighbor.g)
-                    {
-                        isTentativeBetter = true;
-                    }
-
-                    if (isTentativeBetter)
-                    {
-                        neighbor.parent = current;
-                        neighbor.g = tentativeG;
-                        neighbor.CalculateF();
-                    }
-                }
-            }
-        }
-        if (totalLimit.Count == 0)
-            return null;
-        else return totalLimit;
-    }
-
-    private List<Vec2> FindPathss(Vec2 start, Vec2 end) // AStar
     {
         List<Vec2> openNeighborList = GetNeighbors(start);
         int fastDistance = Vec2.FastDistance(start, end);
@@ -910,34 +758,18 @@ public class Map : MonoBehaviour
         if (node.R > 0 && MAP[node.R - 1, node.C] == -1) // Up
         {
             neighbor.Add(new Vec2(node.R - 1, node.C));
-            //if (SHIFT_ROOT_POS[node.R - 1][node.C] == true)
-            //{
-            //    return neighbor;
-            //}
         }
         if (node.R < MAP.GetLength(0) - 1 && MAP[node.R + 1, node.C] == -1) // Down
         {
             neighbor.Add(new Vec2(node.R + 1, node.C));
-            //if (SHIFT_ROOT_POS[node.R + 1][node.C] == true)
-            //{
-            //    return neighbor;
-            //}
         }
         if (node.C > 0 && MAP[node.R, node.C - 1] == -1) // Right
         {
             neighbor.Add(new Vec2(node.R, node.C - 1));
-            //if (SHIFT_ROOT_POS[node.R][node.C - 1] == true)
-            //{
-            //    return neighbor;
-            //}
         }
         if (node.C < MAP.GetLength(1) - 1 && MAP[node.R, node.C + 1] == -1) // Left
         {
             neighbor.Add(new Vec2(node.R, node.C + 1));
-            //if (SHIFT_ROOT_POS[node.R][node.C + 1] == true)
-            //{
-            //    return neighbor;
-            //}
         }
         return neighbor;
     }
