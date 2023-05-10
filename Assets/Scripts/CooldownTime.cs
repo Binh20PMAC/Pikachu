@@ -8,6 +8,7 @@ public class CooldownTime : MonoBehaviour
     [SerializeField] public static float levelUp = 0f;
     [SerializeField] private float Times = 300f;
     [SerializeField] private GameObject gameOver;
+    [SerializeField] private GameObject gamePlay;
     private void Update()
     {
         if (levelUp == 1f)
@@ -19,14 +20,15 @@ public class CooldownTime : MonoBehaviour
         if (Cooldown.fillAmount == 0)
         {
             gameOver.SetActive(true);
-            if(!gameOver.activeInHierarchy)
-            {
-                Map.score = 0;
-                Map.COL = 0;
-                Map.ROW = 0;
-                Map.level = 1;
-                SceneManager.LoadScene("SampleScene");
-            }
+            gamePlay.SetActive(false);
+            //if(!gameOver.activeInHierarchy)
+            //{
+            //    Map.score = 0;
+            //    Map.COL = 0;
+            //    Map.ROW = 0;
+            //    Map.level = 1;
+            //    SceneManager.LoadScene("SampleScene");
+            //}
         }
 
     }

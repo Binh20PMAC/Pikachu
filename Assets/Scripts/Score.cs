@@ -21,7 +21,7 @@ public class Score : MonoBehaviour
 
     private void HighScore()
     {
-        highScore.text = "HighScore: " + PlayerPrefs.GetInt("highscore").ToString();
+        highScore.text = "Highscore: " + PlayerPrefs.GetInt("highscore").ToString();
 
         if (Map.score > PlayerPrefs.GetInt("highscore"))
         {
@@ -31,7 +31,7 @@ public class Score : MonoBehaviour
 
     private void HighLevel()
     {
-        highLevel.text = "HighLevel: " + PlayerPrefs.GetInt("highlevel").ToString();
+        highLevel.text = "Highest Level: " + PlayerPrefs.GetInt("highlevel").ToString();
 
         if (Map.level > PlayerPrefs.GetInt("highlevel"))
         {

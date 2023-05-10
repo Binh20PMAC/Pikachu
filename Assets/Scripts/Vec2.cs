@@ -8,10 +8,10 @@ public class Vec2
 
     public Vec2 parent;
     public float g, h, f;
-    public void CalculateF()
-    {
-        f = g + h;
-    }
+    //public void CalculateF()
+    //{
+    //    f = g + h;
+    //}
     public Vec2()
     {
         R = 0;
@@ -59,12 +59,12 @@ public class Vec2
         path.Reverse();
         return path;
     }
-    public static int Heuristic(Vec2 a, Vec2 b)
-    {
-        // Manhattan
-        int distance = Mathf.Abs(a.R - b.R) + Mathf.Abs(a.C - b.C);
-        return distance;
-    }
+    //public static int Heuristic(Vec2 a, Vec2 b)
+    //{
+    //    // Manhattan
+    //    int distance = Mathf.Abs(a.R - b.R) + Mathf.Abs(a.C - b.C);
+    //    return distance;
+    //}
 
 
 

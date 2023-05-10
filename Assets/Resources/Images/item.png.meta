@@ -956,7 +956,7 @@ TextureImporter:
         width: 63
         height: 64
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       outline: []
       physicsShape: []
@@ -964,6 +964,27 @@ TextureImporter:
       bones: []
       spriteID: f8be0e7a62cc9724a82eb40fe228d0b4
       internalID: 992941057
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: playagain
+      rect:
+        serializedVersion: 2
+        x: 318
+        y: 100
+        width: 63
+        height: 63
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 102ad4198a8acf54a9215e4e4c1c54b5
+      internalID: 1755250427
       vertices: []
       indices: 
       edges: []
@@ -1004,16 +1025,17 @@ TextureImporter:
       item8: 2128916514
       close: 992941057
       item6: -2061913638
-      item30: 1872892607
       item7: 1150037429
-      item25: 367055292
+      item30: 1872892607
       item34: -860723221
       item2: -1337294803
       item9: -1825694558
+      item25: 367055292
       item5: 1747370115
       item15: -128546639
-      item33: 1836895027
       1: -417351605
+      item33: 1836895027
+      playagain: 1755250427
       item11: -1401423709
       item12: -948151275
       gameover: -1598615876
