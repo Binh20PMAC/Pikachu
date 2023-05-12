@@ -2550,6 +2550,8 @@ LineRenderer:
   m_Positions:
   - {x: 0, y: 0, z: 0}
   - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 0}
+  - {x: 0, y: 0, z: 0}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 5.281572
@@ -3172,7 +3174,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cooldown: {fileID: 2064033461}
-  time: 500
+  time: 400
   gameOver: {fileID: 1526820500}
   gamePlay: {fileID: 1168008096}
 --- !u!114 &2064033461
