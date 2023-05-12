@@ -21,13 +21,13 @@ public class Change : MonoBehaviour
 
         List<Sprite> sprites = new List<Sprite>();
 
-        for (int i = 1; i < Map.ROW - 1; i++)
+        for (int i = 1; i < Map.row - 1; i++)
         {
-            for (int j = 1; j < Map.COL - 1; j++)
+            for (int j = 1; j < Map.col - 1; j++)
             {
-                if (Map.map_pikachu[i, j].gameObject.activeInHierarchy)
+                if (Map.mapPikachu[i, j].gameObject.activeInHierarchy)
                 {
-                    sprites.Add(Map.map_pikachu[i, j].GetComponent<SpriteRenderer>().sprite);
+                    sprites.Add(Map.mapPikachu[i, j].GetComponent<SpriteRenderer>().sprite);
                 }
 
             }
@@ -44,12 +44,12 @@ public class Change : MonoBehaviour
             sprites[index2] = temp;
         }
 
-        for (int i = 1; i < Map.ROW - 1; i++)
+        for (int i = 1; i < Map.row - 1; i++)
         {
-            for (int j = 1; j < Map.COL - 1; j++)
+            for (int j = 1; j < Map.col - 1; j++)
             {
-                if (Map.map_pikachu[i, j].gameObject.activeInHierarchy)
-                    Map.map_pikachu[i, j].GetComponent<SpriteRenderer>().sprite = sprites[--count];
+                if (Map.mapPikachu[i, j].gameObject.activeInHierarchy)
+                    Map.mapPikachu[i, j].GetComponent<SpriteRenderer>().sprite = sprites[--count];
 
             }
         }

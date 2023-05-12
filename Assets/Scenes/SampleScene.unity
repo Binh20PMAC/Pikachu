@@ -459,15 +459,15 @@ RectTransform:
   m_GameObject: {fileID: 271549191}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 1526820501}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 0, y: 5}
+  m_AnchoredPosition: {x: 0, y: 8}
   m_SizeDelta: {x: 10, y: 10}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &271549193
@@ -492,8 +492,8 @@ MonoBehaviour:
   m_Transition: 1
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_HighlightedColor: {r: 0.36078432, g: 0.6, b: 0, a: 1}
+    m_PressedColor: {r: 1, g: 1, b: 1, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
@@ -613,8 +613,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aee3a74d8d83a0d429f15210d1351e64, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Time: {fileID: 2114462815}
-  ScoreAndChange: {fileID: 1305789080}
+  time: {fileID: 2114462815}
+  scoreAndChange: {fileID: 1305789080}
   rectTransform: {fileID: 951750123}
 --- !u!1 &301667828
 GameObject:
@@ -2230,8 +2230,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1168008096}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.0000076293945}
-  m_LocalScale: {x: 0.99999994, y: 0.99999994, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -2250,9 +2250,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   linePikachu: {fileID: 1396980601}
-  prefap_pikachu: {fileID: 2858847658071050218, guid: 01bce8baefc75964c9065396eba40b6c, type: 3}
-  Width: 6
-  Height: 16
+  prefapPikachu: {fileID: 2858847658071050218, guid: 01bce8baefc75964c9065396eba40b6c, type: 3}
+  width: 8
+  height: 24
 --- !u!1 &1305789079
 GameObject:
   m_ObjectHideFlags: 0
@@ -2550,8 +2550,6 @@ LineRenderer:
   m_Positions:
   - {x: 0, y: 0, z: 0}
   - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
-  - {x: 0, y: 0, z: 0}
   m_Parameters:
     serializedVersion: 3
     widthMultiplier: 5.281572
@@ -2684,7 +2682,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -1598615876, guid: 105a4baffbf7e2e44a3f7dbec2dce2d5, type: 3}
+  m_Sprite: {fileID: -277614477, guid: 0d16edca8c89238408c0e03c694ef053, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -3173,8 +3171,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 85ca0c7f0cd2be64d9613cf2d982488f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Cooldown: {fileID: 2064033461}
-  Times: 500
+  cooldown: {fileID: 2064033461}
+  time: 500
   gameOver: {fileID: 1526820500}
   gamePlay: {fileID: 1168008096}
 --- !u!114 &2064033461

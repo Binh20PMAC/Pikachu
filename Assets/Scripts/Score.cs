@@ -6,11 +6,6 @@ public class Score : MonoBehaviour
     [SerializeField] private TMP_Text score;
     [SerializeField] private TMP_Text highScore;
     [SerializeField] private TMP_Text highLevel;
-
-    private void Start()
-    {
-
-    }
     private void Update()
     {
         score.text = "Score " + Map.score.ToString();

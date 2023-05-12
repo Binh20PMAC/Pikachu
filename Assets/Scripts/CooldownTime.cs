@@ -4,20 +4,20 @@ using UnityEngine.UI;
 
 public class CooldownTime : MonoBehaviour
 {
-    [SerializeField] private Image Cooldown;
+    [SerializeField] private Image cooldown;
     [SerializeField] public static float levelUp = 0f;
-    [SerializeField] private float Times = 300f;
+    [SerializeField] private float time = 300f;
     [SerializeField] private GameObject gameOver;
     [SerializeField] private GameObject gamePlay;
     private void Update()
     {
         if (levelUp == 1f)
         {
-            Cooldown.fillAmount = 1;
+            cooldown.fillAmount = 1;
         }
-        Cooldown.fillAmount -= 1 / Times * Time.deltaTime;
-        levelUp = Cooldown.fillAmount;
-        if (Cooldown.fillAmount == 0)
+        cooldown.fillAmount -= 1 / time * Time.deltaTime;
+        levelUp = cooldown.fillAmount;
+        if (cooldown.fillAmount == 0)
         {
             gameOver.SetActive(true);
             gamePlay.SetActive(false);
