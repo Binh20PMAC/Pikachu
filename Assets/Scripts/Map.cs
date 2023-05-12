@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Map : MonoBehaviour
 {
+    [SerializeField] private ButtonManager pikachuChange;
     [SerializeField] private GameObject linePikachu;
     [SerializeField] private GameObject prefapPikachu;
     [SerializeField] public static GameObject[,] mapPikachu;
@@ -13,8 +15,6 @@ public class Map : MonoBehaviour
     [SerializeField] private int height;
     public static int row, col;
     private int[,] mapAll;
-    private bool[][] shift;
-    private bool[][] shiftRootPos;
     private Vec2 pos1;
     private Vec2 pos2;
     private Vector2[][] pos;
@@ -32,7 +32,7 @@ public class Map : MonoBehaviour
         Pikachu(width + 2, height + 2);
         RandomMap();
         map = ((row - 2) * (col - 2)) / 2;
-        AudioManager.instance.PlaySFX("change");
+        ButtonManager.instance.PlaySFX("change");
     }
     private void Update()
     {
@@ -84,7 +84,7 @@ public class Map : MonoBehaviour
         pos1 = null;
         pos2 = null;
         Debug.Log("DeSelect");
-        AudioManager.instance.PlaySFX("e-oh");
+        ButtonManager.instance.PlaySFX("e-oh");
     }
     private void CheckPair(Vec2 pos)
     {
@@ -94,15 +94,14 @@ public class Map : MonoBehaviour
         {
             mapAll[pos1.R, pos1.C] = -1;
             mapAll[pos2.R, pos2.C] = -1;
-            shiftRootPos[pos2.R][pos2.R] = true;
-
+            List<Vec2> checkFindPath = FindPath(pos1, pos2);
             if (mapAll[pos2.R + 1, pos2.C] == 0 && mapAll[pos2.R - 1, pos2.C] == 0 && mapAll[pos2.R, pos2.C + 1] == 0 && mapAll[pos2.R, pos2.C - 1] == 0)
             {
                 Default();
             }
-            else if (!shift[pos1.R][pos1.C] && !shift[pos2.R][pos2.C] && FindPath(pos1, pos2) != null)
+            else if (checkFindPath != null)
             {
-                Line(FindPath(pos1, pos2).Count);
+                Line(checkFindPath.Count);
 
                 if (mapPikachu[pos1.R, pos1.C].GetComponent<SpriteRenderer>().sprite.name == mapPikachu[pos2.R, pos2.C].GetComponent<SpriteRenderer>().sprite.name && mapAll[pos2.R, pos2.C] == -1)
                 {
@@ -111,14 +110,17 @@ public class Map : MonoBehaviour
                     (mapPikachu[pos2.R, pos2.C]).SetActive(false);
                     mapAll[pos1.R, pos1.C] = -1;
                     mapAll[pos2.R, pos2.C] = -1;
-                    shiftRootPos[pos2.R][pos2.R] = false;
                     pos1 = null;
                     pos2 = null;
                     score += 10;
-                    AudioManager.instance.PlaySFX("point");
+                    ButtonManager.instance.PlaySFX("point");
                     if (map == 0)
                     {
                         StartCoroutine(NextLevel());
+                    }
+                    if (AutoChange() == true)
+                    {
+                        pikachuChange.ChangeMap();
                     }
                 }
                 else Default();
@@ -166,18 +168,17 @@ public class Map : MonoBehaviour
         RandomMap();
         map = ((row - 2) * (col - 2)) / 2;
         CooldownTime.levelUp = 1;
-        AudioManager.instance.PlaySFX("change");
+        ButtonManager.instance.PlaySFX("change");
     }
     private void Default()
     {
         mapAll[pos1.R, pos1.C] = 0;
         mapAll[pos2.R, pos2.C] = 0;
-        shiftRootPos[pos2.R][pos2.R] = false;
         mapPikachu[pos1.R, pos1.C].GetComponent<SpriteRenderer>().color = defaultColor;
         mapPikachu[pos2.R, pos2.C].GetComponent<SpriteRenderer>().color = defaultColor;
         pos1 = null;
         pos2 = null;
-        AudioManager.instance.PlaySFX("e-oh");
+        ButtonManager.instance.PlaySFX("e-oh");
     }
 
     private GameObject AddPikachu(int type, Vector2 pos, int width, int height)
@@ -242,8 +243,6 @@ public class Map : MonoBehaviour
         Map.col = col;
         mapPikachu = new GameObject[Map.row, Map.col];
         mapAll = new int[Map.row, Map.col];
-        shift = new bool[Map.row][];
-        shiftRootPos = new bool[Map.row][];
         pos = new Vector2[Map.row][];
 
         minX = -(Map.col) * cellWidth / 2;
@@ -251,15 +250,10 @@ public class Map : MonoBehaviour
 
         for (int i = 0; i < Map.row; i++)
         {
-            shift[i] = new bool[Map.col];
-            shiftRootPos[i] = new bool[Map.col];
             pos[i] = new Vector2[Map.col];
             for (int j = 0; j < Map.col; j++)
             {
-                shift[i][j] = false;
                 mapAll[i, j] = -1;
-                shiftRootPos[i][j] = false;
-
 
                 pos[i][j] = new Vector3(0, 0, 0);
                 pos[i][j].x = minX + j * cellWidth + cellWidth / 2;
@@ -268,7 +262,7 @@ public class Map : MonoBehaviour
         }
     }
 
-    private List<Vec2> FindPath(Vec2 start, Vec2 end) // AStar
+    private List<Vec2> FindPath(Vec2 start, Vec2 end)
     {
         List<Vec2> openNeighborList = GetNeighbors(start);
         int fastDistance = Vec2.FastDistance(start, end);
@@ -527,5 +521,53 @@ public class Map : MonoBehaviour
             neighbor.Add(new Vec2(node.R, node.C + 1));
         }
         return neighbor;
+    }
+    private bool AutoChange()
+    {
+        List<GameObject> mapAutoCheck = new List<GameObject>();
+        for (int i = 0; i < mapPikachu.GetLength(0); i++)
+        {
+            for (int j = 0; j < mapPikachu.GetLength(1); j++)
+            {
+                GameObject currentObject = mapPikachu[i, j];
+                if (currentObject != null && currentObject.gameObject.activeInHierarchy)
+                {
+                    mapAutoCheck.Add(currentObject);
+                }
+            }
+        }
+        foreach (var start in mapAutoCheck)
+        {
+            foreach (var end in mapAutoCheck)
+            {
+                if (end.transform.position == start.transform.position)
+                {
+                    continue;
+                }
+                var startPikachu = start.GetComponent<SpriteRenderer>().sprite.name;
+                var endPikachu = end.GetComponent<SpriteRenderer>().sprite.name;
+                if (startPikachu == endPikachu)
+                {
+                    float deltaStartX = start.transform.position.x - minX - cellWidth / 2;
+                    float deltaStartY = start.transform.position.y - minY - cellHeight / 2;
+                    int colStart = Mathf.FloorToInt(deltaStartX / cellWidth);
+                    int rowStart = Mathf.FloorToInt(deltaStartY / cellHeight);
+
+                    float deltaEndX = end.transform.position.x - minX - cellWidth / 2;
+                    float deltaEndY = end.transform.position.y - minY - cellHeight / 2;
+                    int colEnd = Mathf.FloorToInt(deltaEndX / cellWidth);
+                    int rowEnd = Mathf.FloorToInt(deltaEndY / cellHeight);
+                    mapAll[rowEnd, colEnd] = -1;
+                    if (FindPath(new Vec2(rowStart, colStart), new Vec2(rowEnd, colEnd)) != null)
+                    {
+                        mapAll[rowEnd, colEnd] = 0;
+                        Debug.Log("(Dong: " + rowStart + " Cot: " + colStart + ")" + " - " + "(Dong: " + rowEnd + " Cot: " + colEnd + ")");
+                        return false;
+                    }
+                    else mapAll[rowEnd, colEnd] = 0;
+                }
+            }
+        }
+        return true;
     }
 }
