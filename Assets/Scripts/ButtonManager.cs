@@ -6,20 +6,15 @@ using UnityEngine.SceneManagement;
 
 public class ButtonManager : MonoBehaviour
 {
-    public static ButtonManager instance;
     [SerializeField] private AudioSource sfxSource;
     [SerializeField] private Sound[] sfxSound;
     [SerializeField] private int numberChange = 10;
     [SerializeField] private TMP_Text numberChangetxt;
-
-    private void Awake()
-    {
-        instance = this;
-    }
+    [SerializeField] private Map Map;
 
     private void Start()
     {
-        numberChangetxt.text = "Change " + numberChange.ToString();
+        numberChangetxt.text = $"Change {numberChange}";
         if (PlayerPrefs.GetInt("SFXMute") == 1)
         {
             sfxSource.mute = true;
@@ -99,16 +94,12 @@ public class ButtonManager : MonoBehaviour
             }
         }
         numberChange--;
-        numberChangetxt.text = "Change " + numberChange.ToString();
+        numberChangetxt.text = $"Change {numberChange}";
         PlaySFX("change");
         Debug.Log(sprites.Count);
     }
     public void LoadPlayAgain()
     {
-        Map.score = 0;
-        Map.col = 0;
-        Map.row = 0;
-        Map.level = 0;
         SceneManager.LoadScene("SampleScene");
     }
 }

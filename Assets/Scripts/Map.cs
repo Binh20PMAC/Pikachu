@@ -1,44 +1,49 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class Map : MonoBehaviour
 {
-    [SerializeField] private ButtonManager pikachuChange;
+    [SerializeField] private ButtonManager pikachuManager;
     [SerializeField] private GameObject linePikachu;
     [SerializeField] private GameObject prefapPikachu;
-    [SerializeField] public static GameObject[,] mapPikachu;
-    [SerializeField] private int width;
+    [SerializeField] private CountdownTime countdown;
+    [SerializeField] public GameObject[,] mapPikachu { get; private set; }
     [SerializeField] private int height;
-    public static int row, col;
-    private int[,] mapAll;
+    [SerializeField] private int width;
+    public int row { get; private set; }
+    public int col { get; private set; }
+    public int score { get; private set; }
+    public int level { get; private set; } = 1;
+
+
     private Vec2 pos1;
     private Vec2 pos2;
+
     private Vector2[][] pos;
+    private Color opacity = new Color(255f, 255f, 255f, .5f);
+    private Color defaultColor = new Color(255f, 255f, 255f, 1.0f);
+
+    private int[,] mapAll;
     private int minX;
     private int minY;
     private int cellWidth = 28;
     private int cellHeight = 32;
-    private Color opacity = new Color(255f, 255f, 255f, .5f);
-    private Color defaultColor = new Color(255f, 255f, 255f, 1.0f);
-    public static int score = 0;
-    public static int level = 1;
     private int map = 0;
+
+    private const string change = "change";
     private void Start()
     {
-        Pikachu(width + 2, height + 2);
+        Pikachu(height + 2, width + 2);
         RandomMap();
         map = ((row - 2) * (col - 2)) / 2;
-        ButtonManager.instance.PlaySFX("change");
+        pikachuManager.PlaySFX(change);
     }
     private void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            float x = (Input.mousePosition.x - Screen.width / 2) / (Screen.width * (Screen.width * 1.0f / Screen.height));
+            float x = (Input.mousePosition.x - Screen.width / 2) / (Screen.width * ((float)Screen.width / Screen.height));
             float y = (Input.mousePosition.y - Screen.height / 2) / (Screen.height);
 
             if (Screen.width == 1920)
@@ -84,7 +89,7 @@ public class Map : MonoBehaviour
         pos1 = null;
         pos2 = null;
         Debug.Log("DeSelect");
-        ButtonManager.instance.PlaySFX("e-oh");
+        pikachuManager.PlaySFX("e-oh");
     }
     private void CheckPair(Vec2 pos)
     {
@@ -105,7 +110,6 @@ public class Map : MonoBehaviour
 
                 if (mapPikachu[pos1.R, pos1.C].GetComponent<SpriteRenderer>().sprite.name == mapPikachu[pos2.R, pos2.C].GetComponent<SpriteRenderer>().sprite.name && mapAll[pos2.R, pos2.C] == -1)
                 {
-                    map--;
                     (mapPikachu[pos1.R, pos1.C]).SetActive(false);
                     (mapPikachu[pos2.R, pos2.C]).SetActive(false);
                     mapAll[pos1.R, pos1.C] = -1;
@@ -113,14 +117,15 @@ public class Map : MonoBehaviour
                     pos1 = null;
                     pos2 = null;
                     score += 10;
-                    ButtonManager.instance.PlaySFX("point");
+                    pikachuManager.PlaySFX("point");
+                    --map;
                     if (map == 0)
                     {
-                        StartCoroutine(NextLevel());
+                        StartCoroutine(WaitForNextLevel());
                     }
-                    if (AutoChange() == true)
+                    if (AutoChange() == true && map > 0)
                     {
-                        pikachuChange.ChangeMap();
+                        pikachuManager.ChangeMap();
                     }
                 }
                 else Default();
@@ -149,26 +154,24 @@ public class Map : MonoBehaviour
         linePikachu.SetActive(true);
         if (linePikachu.activeInHierarchy)
         {
-            StartCoroutine(LineOff());
+            StartCoroutine(WaitForLineOff());
         }
     }
 
-    IEnumerator LineOff()
+    IEnumerator WaitForLineOff()
     {
         yield return new WaitForSeconds(0.5f);
         linePikachu.SetActive(false);
     }
-    IEnumerator NextLevel()
+    IEnumerator WaitForNextLevel()
     {
         yield return new WaitForSeconds(1f);
-        level++;
-        col = 0;
-        row = 0;
-        Pikachu(width + 2, height + 2);
+        ++level;
+        Pikachu(height + 2, width + 2);
         RandomMap();
-        map = ((row - 2) * (col - 2)) / 2;
-        CooldownTime.levelUp = 1;
-        ButtonManager.instance.PlaySFX("change");
+        countdown.SetTime(1f);
+        map = (row - 2) * (col - 2) / 2;
+        pikachuManager.PlaySFX(change);
     }
     private void Default()
     {
@@ -178,7 +181,7 @@ public class Map : MonoBehaviour
         mapPikachu[pos2.R, pos2.C].GetComponent<SpriteRenderer>().color = defaultColor;
         pos1 = null;
         pos2 = null;
-        ButtonManager.instance.PlaySFX("e-oh");
+        pikachuManager.PlaySFX("e-oh");
     }
 
     private GameObject AddPikachu(int type, Vector2 pos, int width, int height)
@@ -234,24 +237,24 @@ public class Map : MonoBehaviour
         }
     }
 
-    private void Pikachu(int row, int col)
+    private void Pikachu(int rowPikachu, int colPikachu)
     {
-        cellHeight = (int)(50f / (Map.row - 2));
+        cellHeight = (int)(50f / (row - 2));
         cellWidth = (int)(cellHeight * 0.65f);
 
-        Map.row = row;
-        Map.col = col;
-        mapPikachu = new GameObject[Map.row, Map.col];
-        mapAll = new int[Map.row, Map.col];
-        pos = new Vector2[Map.row][];
+        row = rowPikachu;
+        col = colPikachu;
+        mapPikachu = new GameObject[row, col];
+        mapAll = new int[row, col];
+        pos = new Vector2[row][];
 
-        minX = -(Map.col) * cellWidth / 2;
-        minY = -(Map.row) * cellHeight / 2;
+        minX = -(col) * cellWidth / 2;
+        minY = -(row) * cellHeight / 2;
 
-        for (int i = 0; i < Map.row; i++)
+        for (int i = 0; i < row; i++)
         {
-            pos[i] = new Vector2[Map.col];
-            for (int j = 0; j < Map.col; j++)
+            pos[i] = new Vector2[col];
+            for (int j = 0; j < col; j++)
             {
                 mapAll[i, j] = -1;
 

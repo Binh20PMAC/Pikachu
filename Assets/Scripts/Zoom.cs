@@ -3,9 +3,9 @@ using UnityEngine.UI;
 
 public class Zoom : MonoBehaviour
 {
-    [SerializeField] RectTransform time;
-    [SerializeField] RectTransform scoreAndChange;
-    [SerializeField] RectTransform rectTransform;
+    [SerializeField] private RectTransform time;
+    [SerializeField] private RectTransform scoreAndChange;
+    [SerializeField] private RectTransform rectTransform;
     private Vector2 timeTemp;
     private Vector2 scoreAndChangeTemp;
     private float height;
